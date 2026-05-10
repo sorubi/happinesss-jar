@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react'
+import { useRef, useEffect, useState, useMemo, forwardRef, useImperativeHandle } from 'react'
 import type { Orb, JarGeometry, PhysicsOrb } from '../../types'
 import { renderJarScene } from './jarRenderer'
 import { usePhysics } from './usePhysics'
@@ -30,7 +30,7 @@ const JarCanvas = forwardRef<JarCanvasRef, JarCanvasProps>(
   ({ orbs, width, height, onOrbTap }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const [physicsOrbs, setPhysicsOrbs] = useState<PhysicsOrb[]>([])
-    const geometry = computeGeometry(width, height)
+    const geometry = useMemo(() => computeGeometry(width, height), [width, height])
     const prevOrbIdsRef = useRef<Set<string>>(new Set())
 
     const { addOrbToPhysics, shake, removeOrbFromPhysics } = usePhysics({
@@ -44,9 +44,7 @@ const JarCanvas = forwardRef<JarCanvasRef, JarCanvasProps>(
       const newIds = new Set(orbs.map(o => o.id))
 
       for (const orb of orbs) {
-        if (!prevOrbIdsRef.current.has(orb.id)) {
-          addOrbToPhysics(orb.id, orb.color, orb.color2, orb.size)
-        }
+        addOrbToPhysics(orb.id, orb.color, orb.color2, orb.size)
       }
 
       for (const id of prevOrbIdsRef.current) {

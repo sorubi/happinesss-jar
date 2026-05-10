@@ -57,12 +57,14 @@ export function usePhysics({ geometry: g, onOrbsUpdate }: UsePhysicsOptions) {
     return () => {
       cancelAnimationFrame(rafRef.current)
       Engine.clear(engine)
+      orbBodiesRef.current = []
     }
   }, [g.cx, g.cy, g.bodyW, g.bodyH, g.neckW, g.neckH])
 
   const addOrbToPhysics = useCallback((id: string, color: string, color2: string, radius: number) => {
     const engine = engineRef.current
     if (!engine) return
+    if (orbBodiesRef.current.some(o => o.id === id)) return
 
     const x = g.cx + (Math.random() - 0.5) * g.neckW * 0.5
     const y = g.cy - g.bodyH / 2 - g.neckH + radius

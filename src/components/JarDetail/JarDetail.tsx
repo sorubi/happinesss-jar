@@ -3,6 +3,7 @@ import type { Orb } from '../../types'
 
 import { useOrbStore } from '../../store/useOrbStore'
 import { getOrbsByMonth } from '../../db/orbDb'
+import { useWindowSize } from '../../hooks/useWindowSize'
 import JarCanvas, { type JarCanvasRef } from '../JarCanvas/JarCanvas'
 import PhantomText from './PhantomText'
 import { useShake } from './useShake'
@@ -20,7 +21,7 @@ export default function JarDetail({ month, year, onBack, onCapture }: JarDetailP
   const { setOrbs, orbs } = useOrbStore()
   const [phantomText, setPhantomText] = useState<string | null>(null)
   const jarRef = useRef<JarCanvasRef>(null)
-  const W = window.innerWidth, H = window.innerHeight
+  const { W, H } = useWindowSize()
 
   const now = new Date()
   const isCurrent = month === now.getMonth() && year === now.getFullYear()
