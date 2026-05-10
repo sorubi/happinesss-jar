@@ -6,7 +6,8 @@ export interface Orb {
   createdAt: number   // Unix ms timestamp
   year: number
   month: number       // 0-11
-  color: string       // hex, e.g. '#FF6B9D'
+  color: string       // gradient start hex, e.g. '#F1467A'
+  color2: string      // gradient end hex, e.g. '#FB949E'
   size: number        // 30-60 (px radius)
   emotion: EmotionCategory
 }
@@ -14,7 +15,8 @@ export interface Orb {
 // Physics 시뮬레이션용 — Matter.js body와 함께 쓰는 런타임 타입
 export interface PhysicsOrb {
   id: string
-  color: string
+  color: string       // gradient start hex
+  color2: string      // gradient end hex
   radius: number
   x: number
   y: number
