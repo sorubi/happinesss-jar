@@ -67,8 +67,8 @@ export function drawOrbGlow(ctx: CanvasRenderingContext2D, orb: PhysicsOrb): voi
 
   // 3-layer glow using both gradient colors
   const layers: Array<{ mult: number; alpha: number; useColor2: boolean }> = [
-    { mult: 5.5, alpha: 0.04, useColor2: false },
-    { mult: 3.2, alpha: 0.08, useColor2: true },
+    { mult: 5.5, alpha: 0.05, useColor2: false },
+    { mult: 3.2, alpha: 0.09, useColor2: true },
     { mult: 1.9, alpha: 0.15, useColor2: false },
   ]
 
@@ -86,30 +86,48 @@ export function drawOrbGlow(ctx: CanvasRenderingContext2D, orb: PhysicsOrb): voi
   }
 }
 
-// ─── Orb body (white-hot center, gradient from color to color2, soft edge) ───
+// ─── Orb body ─────────────────────────────────────────────────────────────────
+// Layer 1: diagonal color gradient (no white baked in → no concentric rings)
+// Layer 2: separate radial highlight spot in upper-left for 3D sphere illusion
 
 export function drawOrbBody(ctx: CanvasRenderingContext2D, orb: PhysicsOrb): void {
   const { x, y, radius, color, color2 } = orb
+  const color3 = orb.color3 || color2
   const c1 = hexToRgb(color)
   const c2 = hexToRgb(color2)
+  const c3 = hexToRgb(color3)
 
-  // Soft edge: render slightly larger than radius, fade to transparent
-  const R = radius * 1.1
-
-  const grad = ctx.createRadialGradient(
-    x - radius * 0.12, y - radius * 0.18, 0,
-    x, y, R
-  )
-  grad.addColorStop(0,    'rgba(255,255,255,0.92)')                        // white-hot center
-  grad.addColorStop(0.18, `rgba(${c1.r},${c1.g},${c1.b},0.95)`)           // color (start)
-  grad.addColorStop(0.55, `rgba(${c2.r},${c2.g},${c2.b},0.82)`)           // color2 (end)
-  grad.addColorStop(0.82, `rgba(${c2.r},${c2.g},${c2.b},0.40)`)
-  grad.addColorStop(1,    `rgba(${c2.r},${c2.g},${c2.b},0.0)`)            // soft edge
-
+  ctx.save()
   ctx.beginPath()
-  ctx.arc(x, y, R, 0, Math.PI * 2)
-  ctx.fillStyle = grad
-  ctx.fill()
+  ctx.arc(x, y, radius, 0, Math.PI * 2)
+  ctx.clip()
+
+  // Layer 1 — 3-stop color base: diagonal linear gradient color → color2 → color3
+  const base = ctx.createLinearGradient(x - radius, y - radius, x + radius, y + radius)
+  base.addColorStop(0,   `rgb(${c1.r},${c1.g},${c1.b})`)
+  base.addColorStop(0.5, `rgb(${c2.r},${c2.g},${c2.b})`)
+  base.addColorStop(1,   `rgb(${c3.r},${c3.g},${c3.b})`)
+  ctx.fillStyle = base
+  ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2)
+
+  // Layer 2 — highlight spot: upper-left radial white → transparent
+  const hlx = x - radius * 0.28
+  const hly = y - radius * 0.30
+  const hl = ctx.createRadialGradient(hlx, hly, 0, hlx, hly, radius * 0.72)
+  hl.addColorStop(0,    'rgba(255,255,255,0.78)')
+  hl.addColorStop(0.38, 'rgba(255,255,255,0.22)')
+  hl.addColorStop(1,    'rgba(255,255,255,0)')
+  ctx.fillStyle = hl
+  ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2)
+
+  // Layer 3 — rim darkening: edge → center for 3D depth
+  const rim = ctx.createRadialGradient(x, y, radius * 0.55, x, y, radius)
+  rim.addColorStop(0,   'rgba(0,0,0,0)')
+  rim.addColorStop(1,   'rgba(0,0,0,0.32)')
+  ctx.fillStyle = rim
+  ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2)
+
+  ctx.restore()
 }
 
 // ─── Ambient interior light from orbs ────────────────────────────────────────

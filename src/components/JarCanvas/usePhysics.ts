@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import Matter from 'matter-js'
 import type { JarGeometry, PhysicsOrb } from '../../types'
 
@@ -14,6 +14,7 @@ interface OrbBody {
   id: string
   color: string
   color2: string
+  color3: string
   radius: number
 }
 
@@ -21,10 +22,13 @@ export function usePhysics({ geometry: g, onOrbsUpdate }: UsePhysicsOptions) {
   const engineRef = useRef<Matter.Engine | null>(null)
   const orbBodiesRef = useRef<OrbBody[]>([])
   const rafRef = useRef<number>(0)
+  // increments each time the engine is (re)created — lets JarCanvas re-sync orbs
+  const [engineSetupCount, setEngineSetupCount] = useState(0)
 
   useEffect(() => {
     const engine = Engine.create({ gravity: { y: 2.5 } })
     engineRef.current = engine
+    setEngineSetupCount(c => c + 1)
 
     const T = 12
     const walls = [
@@ -40,10 +44,11 @@ export function usePhysics({ geometry: g, onOrbsUpdate }: UsePhysicsOptions) {
       lastTime = now
       Engine.update(engine, Math.min(delta, 32))
 
-      const physicsOrbs: PhysicsOrb[] = orbBodiesRef.current.map(({ body, id, color, color2, radius }) => ({
+      const physicsOrbs: PhysicsOrb[] = orbBodiesRef.current.map(({ body, id, color, color2, color3, radius }) => ({
         id,
         color,
         color2,
+        color3,
         radius,
         x: body.position.x,
         y: body.position.y,
@@ -61,13 +66,18 @@ export function usePhysics({ geometry: g, onOrbsUpdate }: UsePhysicsOptions) {
     }
   }, [g.cx, g.cy, g.bodyW, g.bodyH, g.neckW, g.neckH])
 
-  const addOrbToPhysics = useCallback((id: string, color: string, color2: string, radius: number) => {
+  const addOrbToPhysics = useCallback((id: string, color: string, color2: string, color3: string, radius: number, spawnAtBottom = false) => {
     const engine = engineRef.current
     if (!engine) return
     if (orbBodiesRef.current.some(o => o.id === id)) return
 
-    const x = g.cx + (Math.random() - 0.5) * g.neckW * 0.5
-    const y = g.cy - g.bodyH / 2 - g.neckH + radius
+    const maxSpread = (g.bodyW / 2 - radius) * 0.85
+    const x = spawnAtBottom
+      ? g.cx + (Math.random() - 0.5) * 2 * maxSpread
+      : g.cx + (Math.random() - 0.5) * g.neckW * 0.5
+    const y = spawnAtBottom
+      ? g.cy + g.bodyH / 2 - radius - Math.random() * radius * 2
+      : g.cy - g.bodyH / 2 - g.neckH + radius
 
     const body = Bodies.circle(x, y, radius, {
       restitution: 0.42,
@@ -76,7 +86,7 @@ export function usePhysics({ geometry: g, onOrbsUpdate }: UsePhysicsOptions) {
       density: 0.002,
     })
     Composite.add(engine.world, body)
-    orbBodiesRef.current.push({ body, id, color, color2, radius })
+    orbBodiesRef.current.push({ body, id, color, color2, color3, radius })
   }, [g])
 
   const shake = useCallback(() => {
@@ -97,5 +107,5 @@ export function usePhysics({ geometry: g, onOrbsUpdate }: UsePhysicsOptions) {
     orbBodiesRef.current.splice(idx, 1)
   }, [])
 
-  return { addOrbToPhysics, shake, removeOrbFromPhysics }
+  return { addOrbToPhysics, shake, removeOrbFromPhysics, engineSetupCount }
 }

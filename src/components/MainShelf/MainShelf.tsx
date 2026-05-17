@@ -54,7 +54,7 @@ export default function MainShelf({ onJarSelect }: MainShelfProps) {
           )
         })}
       </div>
-      <div className="branding">● Sora</div>
+
     </div>
   )
 }

@@ -22,7 +22,7 @@ export default function CaptureModal({ onClose }: CaptureModalProps) {
     setIsAnimating(true)
 
     const emotion = detectEmotion(text)
-    const { color, color2 } = getOrbColors(emotion)
+    const { color, color2, color3 } = getOrbColors(emotion)
     const size = getOrbSize(text)
 
     const orbData: Omit<Orb, 'id'> = {
@@ -32,6 +32,7 @@ export default function CaptureModal({ onClose }: CaptureModalProps) {
       month: activeMonth,
       color,
       color2,
+      color3,
       size,
       emotion,
     }
@@ -39,7 +40,7 @@ export default function CaptureModal({ onClose }: CaptureModalProps) {
     if (canvasRef.current) {
       canvasRef.current.width = window.innerWidth
       canvasRef.current.height = window.innerHeight
-      playMaterializeAnim(canvasRef.current, color, color2, async () => {
+      playMaterializeAnim(canvasRef.current, color, color2, color3, async () => {
         const id = await addOrb(orbData)
         addOrbToCache({ ...orbData, id })
         onClose()

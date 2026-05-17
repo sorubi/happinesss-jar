@@ -40,7 +40,7 @@ export default function JarDetail({ month, year, onBack, onCapture }: JarDetailP
     }
   }, [orbs])
 
-  useShake({ onShake: handleShake })
+  const { needsPermission, requestPermission } = useShake({ onShake: handleShake })
 
   const handleOrbTap = useCallback((orb: Orb) => {
     setPhantomText(orb.text)
@@ -93,13 +93,29 @@ export default function JarDetail({ month, year, onBack, onCapture }: JarDetailP
         />
       )}
 
-      {orbs.length > 0 && (
+      {orbs.length > 0 && !needsPermission && (
         <div style={{
-          position: 'fixed', bottom: 44, left: '50%', transform: 'translateX(-50%)',
+          position: 'fixed', bottom: 116, left: '50%', transform: 'translateX(-50%)',
           fontSize: 11, color: 'rgba(226,232,240,0.3)', whiteSpace: 'nowrap',
         }}>
-          흔들면 구슬이 섞여요
+          디바이스를 흔들면 병 속 구슬이 섞을 수 있어요
         </div>
+      )}
+
+      {needsPermission && (
+        <button
+          onClick={requestPermission}
+          style={{
+            position: 'fixed', bottom: 116, left: '50%', transform: 'translateX(-50%)',
+            background: 'rgba(148,163,184,0.12)',
+            border: '1px solid var(--border-glass)',
+            color: 'var(--text-secondary)',
+            padding: '8px 16px',
+            borderRadius: 20, fontSize: 12, whiteSpace: 'nowrap', zIndex: 100,
+          }}
+        >
+          📳 모션 허용하기
+        </button>
       )}
 
       {isCurrent && (
@@ -117,12 +133,7 @@ export default function JarDetail({ month, year, onBack, onCapture }: JarDetailP
         </button>
       )}
 
-      <div style={{
-        position: 'fixed', bottom: 20, left: 22,
-        fontSize: 13, color: 'rgba(226,232,240,0.5)',
-      }}>
-        ● Sora
-      </div>
+
     </div>
   )
 }

@@ -6,8 +6,9 @@ export interface Orb {
   createdAt: number   // Unix ms timestamp
   year: number
   month: number       // 0-11
-  color: string       // gradient start hex, e.g. '#F1467A'
-  color2: string      // gradient end hex, e.g. '#FB949E'
+  color: string       // gradient start hex
+  color2: string      // gradient mid hex
+  color3: string      // gradient end hex
   size: number        // 30-60 (px radius)
   emotion: EmotionCategory
 }
@@ -16,7 +17,8 @@ export interface Orb {
 export interface PhysicsOrb {
   id: string
   color: string       // gradient start hex
-  color2: string      // gradient end hex
+  color2: string      // gradient mid hex
+  color3: string      // gradient end hex
   radius: number
   x: number
   y: number

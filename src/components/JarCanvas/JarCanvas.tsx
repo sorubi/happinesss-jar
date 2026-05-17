@@ -33,7 +33,7 @@ const JarCanvas = forwardRef<JarCanvasRef, JarCanvasProps>(
     const geometry = useMemo(() => computeGeometry(width, height), [width, height])
     const prevOrbIdsRef = useRef<Set<string>>(new Set())
 
-    const { addOrbToPhysics, shake, removeOrbFromPhysics } = usePhysics({
+    const { addOrbToPhysics, shake, removeOrbFromPhysics, engineSetupCount } = usePhysics({
       geometry,
       onOrbsUpdate: setPhysicsOrbs,
     })
@@ -41,10 +41,25 @@ const JarCanvas = forwardRef<JarCanvasRef, JarCanvasProps>(
     useImperativeHandle(ref, () => ({ shake }), [shake])
 
     useEffect(() => {
+      // engineSetupCount changed → engine was recreated, reset prevOrbIds so isInitialLoad works
+      prevOrbIdsRef.current = new Set()
+
       const newIds = new Set(orbs.map(o => o.id))
+      const isInitialLoad = orbs.length > 0
 
       for (const orb of orbs) {
-        addOrbToPhysics(orb.id, orb.color, orb.color2, orb.size)
+        addOrbToPhysics(orb.id, orb.color, orb.color2, orb.color3 || orb.color2, orb.size, isInitialLoad)
+      }
+
+      prevOrbIdsRef.current = newIds
+    }, [engineSetupCount]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    useEffect(() => {
+      const newIds = new Set(orbs.map(o => o.id))
+      const isInitialLoad = prevOrbIdsRef.current.size === 0 && orbs.length > 0
+
+      for (const orb of orbs) {
+        addOrbToPhysics(orb.id, orb.color, orb.color2, orb.color3 || orb.color2, orb.size, isInitialLoad)
       }
 
       for (const id of prevOrbIdsRef.current) {

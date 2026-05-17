@@ -9,6 +9,9 @@ class OrbDatabase extends Dexie {
     this.version(1).stores({
       orbs: 'id, year, month, createdAt',
     })
+    this.version(2).stores({
+      orbs: 'id, createdAt, [year+month]',
+    })
   }
 }
 
@@ -21,13 +24,13 @@ export async function addOrb(data: Omit<Orb, 'id'>): Promise<string> {
 }
 
 export async function getOrbsByMonth(year: number, month: number): Promise<Orb[]> {
-  return orbDb.orbs.where({ year, month }).toArray()
+  return orbDb.orbs.where('[year+month]').equals([year, month]).toArray()
 }
 
 export async function deleteOrb(id: string): Promise<void> {
   await orbDb.orbs.delete(id)
 }
 
-export async function updateOrb(id: string, changes: Partial<Pick<Orb, 'text' | 'color' | 'color2' | 'emotion'>>): Promise<void> {
+export async function updateOrb(id: string, changes: Partial<Pick<Orb, 'text' | 'color' | 'color2' | 'color3' | 'emotion'>>): Promise<void> {
   await orbDb.orbs.update(id, changes)
 }

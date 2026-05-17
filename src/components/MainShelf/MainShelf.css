@@ -45,11 +45,3 @@
   color: var(--text-primary);
   font-weight: 600;
 }
-
-.branding {
-  position: fixed;
-  bottom: 20px;
-  left: 22px;
-  font-size: 13px;
-  color: var(--text-secondary);
-}

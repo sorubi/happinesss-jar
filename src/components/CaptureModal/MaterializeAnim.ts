@@ -5,6 +5,7 @@ export function playMaterializeAnim(
   canvas: HTMLCanvasElement,
   color: string,
   color2: string,
+  color3: string,
   onComplete: () => void,
 ): void {
   const ctx = canvas.getContext('2d')
@@ -23,6 +24,7 @@ export function playMaterializeAnim(
   const state = { progress: 0 }
   const c1 = hexToRgb(color)
   const c2 = hexToRgb(color2)
+  const c3 = hexToRgb(color3)
 
   gsap.to(state, {
     progress: 1,
@@ -62,15 +64,23 @@ export function playMaterializeAnim(
         ctx.fill()
         ctx.restore()
 
-        const bodyGrad = ctx.createRadialGradient(cx - radius * 0.15, cy - radius * 0.2, 0, cx, cy, radius * 1.1)
-        bodyGrad.addColorStop(0, 'rgba(255,255,255,0.9)')
-        bodyGrad.addColorStop(0.2, `rgba(${c1.r},${c1.g},${c1.b},0.95)`)
-        bodyGrad.addColorStop(0.6, `rgba(${c2.r},${c2.g},${c2.b},0.82)`)
-        bodyGrad.addColorStop(1, `rgba(${c2.r},${c2.g},${c2.b},0)`)
+        ctx.save()
         ctx.beginPath()
-        ctx.arc(cx, cy, radius * 1.1, 0, Math.PI * 2)
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2)
+        ctx.clip()
+        const bodyGrad = ctx.createLinearGradient(cx - radius, cy - radius, cx + radius, cy + radius)
+        bodyGrad.addColorStop(0,   `rgb(${c1.r},${c1.g},${c1.b})`)
+        bodyGrad.addColorStop(0.5, `rgb(${c2.r},${c2.g},${c2.b})`)
+        bodyGrad.addColorStop(1,   `rgb(${c3.r},${c3.g},${c3.b})`)
         ctx.fillStyle = bodyGrad
-        ctx.fill()
+        ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2)
+        const hlGrad = ctx.createRadialGradient(cx - radius * 0.28, cy - radius * 0.30, 0, cx - radius * 0.28, cy - radius * 0.30, radius * 0.72)
+        hlGrad.addColorStop(0, 'rgba(255,255,255,0.78)')
+        hlGrad.addColorStop(0.38, 'rgba(255,255,255,0.22)')
+        hlGrad.addColorStop(1, 'rgba(255,255,255,0)')
+        ctx.fillStyle = hlGrad
+        ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2)
+        ctx.restore()
       }
     },
     onComplete,
